@@ -22,21 +22,15 @@ public class MovieServiceImpl implements MovieService {
 
     @Override
     public String createMovie(MovieDto movieDto) {
-        Objects.requireNonNull(movieDto, "Movie cannot be null");
-        Objects.requireNonNull(movieDto.getTitle(), "Movie title cannot be null");
-        Objects.requireNonNull(movieDto.getGenre(), "Movie genre cannot be null");
-        Objects.requireNonNull(movieDto.getLength(), "Movie length cannot be null");
+        checkValid(movieDto);
         Movie movie = new Movie(movieDto.getTitle(), movieDto.getGenre(), movieDto.getLength(), null);
         saveMovie(movie);
-        return "Created movie: " + movie;
+        return "Created movie" + movie;
     }
 
     @Override
     public String updateMovie(MovieDto movieDto) {
-        Objects.requireNonNull(movieDto, "Movie cannot be null");
-        Objects.requireNonNull(movieDto.getTitle(), "Movie title cannot be null");
-        Objects.requireNonNull(movieDto.getGenre(), "Movie genre cannot be null");
-        Objects.requireNonNull(movieDto.getLength(), "Movie length cannot be null");
+        checkValid(movieDto);
         Optional<Movie> movieOptional = movieRepository.findById(movieDto.getTitle());
         if (movieOptional.isEmpty()) {
             return "Movie does not exist";
@@ -45,7 +39,7 @@ public class MovieServiceImpl implements MovieService {
         movie.setGenre(movieDto.getGenre());
         movie.setLength(movieDto.getLength());
         saveMovie(movie);
-        return "Updated movie: " + movie;
+        return "Updated movie" + movie;
     }
 
     @Override
@@ -56,7 +50,7 @@ public class MovieServiceImpl implements MovieService {
         }
         Movie movie = movieOptional.get();
         movieRepository.delete(movie);
-        return "Deleted movie: " + movie;
+        return "Deleted movie" + movie;
     }
 
     @Override
@@ -80,6 +74,13 @@ public class MovieServiceImpl implements MovieService {
                 .withGenre(movie.getGenre())
                 .withLength(movie.getLength())
                 .build();
+    }
+
+    private void checkValid(MovieDto movieDto) {
+        Objects.requireNonNull(movieDto, "Movie cannot be null");
+        Objects.requireNonNull(movieDto.getTitle(), "Movie title cannot be null");
+        Objects.requireNonNull(movieDto.getGenre(), "Movie genre cannot be null");
+        Objects.requireNonNull(movieDto.getLength(), "Movie length cannot be null");
     }
 
 }
