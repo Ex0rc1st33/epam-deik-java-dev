@@ -4,10 +4,11 @@ import com.epam.training.ticketservice.backend.booking.model.BookingDto;
 import com.epam.training.ticketservice.backend.booking.persistence.entity.Booking;
 import com.epam.training.ticketservice.backend.booking.persistence.repository.BookingRepository;
 import com.epam.training.ticketservice.backend.booking.service.BookingService;
+import com.epam.training.ticketservice.backend.pricecomponent.service.PriceComponentService;
 import com.epam.training.ticketservice.backend.room.persistence.entity.Room;
-import com.epam.training.ticketservice.backend.room.persistence.repository.RoomRepository;
+import com.epam.training.ticketservice.backend.room.service.RoomService;
 import com.epam.training.ticketservice.backend.screening.persistence.entity.Screening;
-import com.epam.training.ticketservice.backend.screening.persistence.repository.ScreeningRepository;
+import com.epam.training.ticketservice.backend.screening.service.ScreeningService;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -20,15 +21,18 @@ public class BookingServiceImpl implements BookingService {
 
     private Integer basePrice = 1500;
     private final BookingRepository bookingRepository;
-    private final RoomRepository roomRepository;
-    private final ScreeningRepository screeningRepository;
+    private final RoomService roomService;
+    private final ScreeningService screeningService;
+    private final PriceComponentService priceComponentService;
 
     public BookingServiceImpl(BookingRepository bookingRepository,
-                              RoomRepository roomRepository,
-                              ScreeningRepository screeningRepository) {
+                              RoomService roomService,
+                              ScreeningService screeningService,
+                              PriceComponentService priceComponentService) {
         this.bookingRepository = bookingRepository;
-        this.roomRepository = roomRepository;
-        this.screeningRepository = screeningRepository;
+        this.roomService = roomService;
+        this.screeningService = screeningService;
+        this.priceComponentService = priceComponentService;
     }
 
     @Override
@@ -39,8 +43,8 @@ public class BookingServiceImpl implements BookingService {
         Objects.requireNonNull(bookingDto.getStartedAt(), "Booking startedAt cannot be null");
         Objects.requireNonNull(bookingDto.getSeats(), "Booking seats cannot be null");
         Objects.requireNonNull(bookingDto.getUser(), "Booking user cannot be null");
-        Optional<Screening> screening = screeningRepository
-                .findByMovieTitleAndRoomNameAndStartedAt(bookingDto.getMovieTitle(),
+        Optional<Screening> screening = screeningService
+                .getMovieByTitleAndRoomNameAndStartedAt(bookingDto.getMovieTitle(),
                         bookingDto.getRoomName(),
                         bookingDto.getStartedAt());
         if (screening.isEmpty()) {
@@ -61,7 +65,9 @@ public class BookingServiceImpl implements BookingService {
             buffer.append(" (").append(s).append("),");
         }
         buffer.deleteCharAt(buffer.length() - 1);
-        buffer.append("; the price for this booking is ").append(basePrice * seats.length).append(" HUF");
+        buffer.append("; the price for this booking is ")
+                .append(calculateNewBookingTotalPrice(bookingDto))
+                .append(" HUF");
         Booking booking = new Booking(bookingDto.getMovieTitle(),
                 bookingDto.getRoomName(),
                 bookingDto.getStartedAt(),
@@ -70,6 +76,24 @@ public class BookingServiceImpl implements BookingService {
                 basePrice);
         bookingRepository.save(booking);
         return buffer.toString();
+    }
+
+    @Override
+    public Integer calculateNewBookingTotalPrice(BookingDto bookingDto) {
+        return (priceComponentService.showPriceForComponents(bookingDto) + basePrice)
+                * bookingDto.getSeats().split(" ").length;
+    }
+
+    @Override
+    public Integer calculateExistingBookingTotalPrice(BookingDto bookingDto) {
+        Optional<Booking> booking = bookingRepository
+                .findByMovieTitleAndRoomNameAndStartedAtAndUserAndSeats(bookingDto.getMovieTitle(),
+                        bookingDto.getRoomName(),
+                        bookingDto.getStartedAt(),
+                        bookingDto.getUser(),
+                        bookingDto.getSeats());
+        return (priceComponentService.showPriceForComponents(bookingDto) + booking.orElseThrow().getBasePrice())
+                * bookingDto.getSeats().split(" ").length;
     }
 
     @Override
@@ -82,21 +106,6 @@ public class BookingServiceImpl implements BookingService {
     public String updateBasePrice(Integer basePrice) {
         this.basePrice = basePrice;
         return "Base price changed to " + this.basePrice;
-    }
-
-    @Override
-    public Integer getBasePriceOfExistingBooking(BookingDto bookingDto) {
-        Optional<Booking> booking = bookingRepository
-                .findByMovieTitleAndRoomNameAndStartedAtAndUserAndSeats(bookingDto.getMovieTitle(),
-                bookingDto.getRoomName(),
-                bookingDto.getStartedAt(),
-                bookingDto.getUser(),
-                bookingDto.getSeats());
-        return booking.orElseThrow().getBasePrice();
-    }
-
-    public Integer getBasePrice() {
-        return basePrice;
     }
 
     private BookingDto convertEntityToDto(Booking booking) {
@@ -130,7 +139,7 @@ public class BookingServiceImpl implements BookingService {
 
     private String getNonExistantSeat(BookingDto bookingDto) {
         String[] newSeats = bookingDto.getSeats().split(" ");
-        Optional<Room> roomOptional = roomRepository.findById(bookingDto.getRoomName());
+        Optional<Room> roomOptional = roomService.getRoomByName(bookingDto.getRoomName());
         if (roomOptional.isPresent()) {
             Room room = roomOptional.get();
             for (String newSeat : newSeats) {

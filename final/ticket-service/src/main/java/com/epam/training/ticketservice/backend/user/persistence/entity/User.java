@@ -1,10 +1,7 @@
 package com.epam.training.ticketservice.backend.user.persistence.entity;
 
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -15,11 +12,8 @@ import javax.persistence.Enumerated;
 import javax.persistence.EnumType;
 
 @Entity
-@Getter
-@Setter
+@Data
 @NoArgsConstructor
-@EqualsAndHashCode
-@ToString
 public class User {
 
     @Id

@@ -2,6 +2,7 @@ package com.epam.training.ticketservice.ui.command;
 
 import com.epam.training.ticketservice.backend.booking.model.BookingDto;
 import com.epam.training.ticketservice.backend.booking.service.BookingService;
+import com.epam.training.ticketservice.backend.pricecomponent.service.PriceComponentService;
 import com.epam.training.ticketservice.backend.user.model.UserDto;
 import com.epam.training.ticketservice.backend.user.persistence.entity.User;
 import com.epam.training.ticketservice.backend.user.service.UserService;
@@ -73,7 +74,7 @@ public class UserCommand {
                     .append(" starting at ")
                     .append(bookingDto.getStartedAt())
                     .append(" for ")
-                    .append(bookingService.getBasePriceOfExistingBooking(bookingDto) * seats.length)
+                    .append(bookingService.calculateExistingBookingTotalPrice(bookingDto))
                     .append(" HUF\n");
         }
         return buffer.deleteCharAt(buffer.length() - 1).toString();

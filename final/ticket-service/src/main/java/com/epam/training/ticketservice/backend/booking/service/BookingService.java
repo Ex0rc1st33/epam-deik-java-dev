@@ -12,8 +12,8 @@ public interface BookingService {
 
     String updateBasePrice(Integer basePrice);
 
-    Integer getBasePriceOfExistingBooking(BookingDto booking);
+    Integer calculateNewBookingTotalPrice(BookingDto bookingDto);
 
-    Integer getBasePrice();
+    Integer calculateExistingBookingTotalPrice(BookingDto bookingDto);
 
 }

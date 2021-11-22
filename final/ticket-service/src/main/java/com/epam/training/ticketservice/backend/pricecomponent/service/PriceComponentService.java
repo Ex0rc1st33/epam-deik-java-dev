@@ -13,6 +13,6 @@ public interface PriceComponentService {
 
     String attachPriceComponentToScreening(String componentName, String movieTitle, String roomName, String startedAt);
 
-    Integer showPriceFor(BookingDto bookingDto);
+    Integer showPriceForComponents(BookingDto bookingDto);
 
 }

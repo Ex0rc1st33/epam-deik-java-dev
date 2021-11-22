@@ -1,5 +1,6 @@
 package com.epam.training.ticketservice.backend.room.service.impl;
 
+import com.epam.training.ticketservice.backend.movie.persistence.entity.Movie;
 import com.epam.training.ticketservice.backend.room.model.RoomDto;
 import com.epam.training.ticketservice.backend.room.persistence.entity.Room;
 import com.epam.training.ticketservice.backend.room.persistence.repository.RoomRepository;
@@ -26,8 +27,8 @@ public class RoomServiceImpl implements RoomService {
         Objects.requireNonNull(roomDto.getName(), "Room name cannot be null");
         Objects.requireNonNull(roomDto.getRowCount(), "Room rowCount cannot be null");
         Objects.requireNonNull(roomDto.getColCount(), "Room colCount cannot be null");
-        Room room = new Room(roomDto.getName(), roomDto.getRowCount(), roomDto.getColCount());
-        roomRepository.save(room);
+        Room room = new Room(roomDto.getName(), roomDto.getRowCount(), roomDto.getColCount(), null);
+        saveRoom(room);
         return "Created room: " + room;
     }
 
@@ -44,7 +45,7 @@ public class RoomServiceImpl implements RoomService {
         Room room = roomOptional.get();
         room.setRowCount(roomDto.getRowCount());
         room.setColCount(roomDto.getColCount());
-        roomRepository.save(room);
+        saveRoom(room);
         return "Updated room: " + room;
     }
 
@@ -62,6 +63,16 @@ public class RoomServiceImpl implements RoomService {
     @Override
     public List<RoomDto> listRooms() {
         return roomRepository.findAll().stream().map(this::convertEntityToDto).collect(Collectors.toList());
+    }
+
+    @Override
+    public Optional<Room> getRoomByName(String roomName) {
+        return roomRepository.findById(roomName);
+    }
+
+    @Override
+    public void saveRoom(Room room) {
+        roomRepository.save(room);
     }
 
     private RoomDto convertEntityToDto(Room room) {

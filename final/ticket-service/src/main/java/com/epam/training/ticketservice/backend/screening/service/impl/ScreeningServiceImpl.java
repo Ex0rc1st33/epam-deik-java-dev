@@ -1,9 +1,9 @@
 package com.epam.training.ticketservice.backend.screening.service.impl;
 
 import com.epam.training.ticketservice.backend.movie.persistence.entity.Movie;
-import com.epam.training.ticketservice.backend.movie.persistence.repository.MovieRepository;
+import com.epam.training.ticketservice.backend.movie.service.MovieService;
 import com.epam.training.ticketservice.backend.room.persistence.entity.Room;
-import com.epam.training.ticketservice.backend.room.persistence.repository.RoomRepository;
+import com.epam.training.ticketservice.backend.room.service.RoomService;
 import com.epam.training.ticketservice.backend.screening.model.ScreeningDto;
 import com.epam.training.ticketservice.backend.screening.persistence.entity.Screening;
 import com.epam.training.ticketservice.backend.screening.persistence.repository.ScreeningRepository;
@@ -21,15 +21,15 @@ import java.util.stream.Collectors;
 public class ScreeningServiceImpl implements ScreeningService {
 
     private final ScreeningRepository screeningRepository;
-    private final MovieRepository movieRepository;
-    private final RoomRepository roomRepository;
+    private final MovieService movieService;
+    private final RoomService roomService;
 
     public ScreeningServiceImpl(ScreeningRepository screeningRepository,
-                                MovieRepository movieRepository,
-                                RoomRepository roomRepository) {
+                                MovieService movieService,
+                                RoomService roomService) {
         this.screeningRepository = screeningRepository;
-        this.movieRepository = movieRepository;
-        this.roomRepository = roomRepository;
+        this.movieService = movieService;
+        this.roomService = roomService;
     }
 
     @Override
@@ -38,11 +38,11 @@ public class ScreeningServiceImpl implements ScreeningService {
         Objects.requireNonNull(screeningDto.getMovieTitle(), "Screening movieTitle cannot be null");
         Objects.requireNonNull(screeningDto.getRoomName(), "Screening roomName cannot be null");
         Objects.requireNonNull(screeningDto.getStartedAt(), "Screening startedAt cannot be null");
-        Optional<Movie> movie = movieRepository.findById(screeningDto.getMovieTitle());
+        Optional<Movie> movie = movieService.getMovieByTitle(screeningDto.getMovieTitle());
         if (movie.isEmpty()) {
             return "Movie does not exist";
         }
-        Optional<Room> room = roomRepository.findById(screeningDto.getRoomName());
+        Optional<Room> room = roomService.getRoomByName(screeningDto.getRoomName());
         if (room.isEmpty()) {
             return "Room does not exist";
         }
@@ -54,8 +54,9 @@ public class ScreeningServiceImpl implements ScreeningService {
         }
         Screening screening = new Screening(screeningDto.getMovieTitle(),
                 screeningDto.getRoomName(),
-                screeningDto.getStartedAt());
-        screeningRepository.save(screening);
+                screeningDto.getStartedAt(),
+                null);
+        saveScreening(screening);
         return "Created screening: " + screening;
     }
 
@@ -63,7 +64,7 @@ public class ScreeningServiceImpl implements ScreeningService {
     public String deleteScreening(ScreeningDto screeningDto) {
         Optional<Screening> screeningOptional = screeningRepository
                 .findByMovieTitleAndRoomNameAndStartedAt(screeningDto.getMovieTitle(),
-                screeningDto.getRoomName(), screeningDto.getStartedAt());
+                        screeningDto.getRoomName(), screeningDto.getStartedAt());
         if (screeningOptional.isEmpty()) {
             return "Screening does not exist";
         }
@@ -77,6 +78,18 @@ public class ScreeningServiceImpl implements ScreeningService {
         return screeningRepository.findAll().stream().map(this::convertEntityToDto).collect(Collectors.toList());
     }
 
+    @Override
+    public Optional<Screening> getMovieByTitleAndRoomNameAndStartedAt(String movieTitle,
+                                                                      String roomName,
+                                                                      String startedAt) {
+        return screeningRepository.findByMovieTitleAndRoomNameAndStartedAt(movieTitle, roomName, startedAt);
+    }
+
+    @Override
+    public void saveScreening(Screening screening) {
+        screeningRepository.save(screening);
+    }
+
     private ScreeningDto convertEntityToDto(Screening screening) {
         return ScreeningDto.builder()
                 .withMovieTitle(screening.getMovieTitle())
@@ -87,7 +100,7 @@ public class ScreeningServiceImpl implements ScreeningService {
 
     private boolean isOverlapping(ScreeningDto screeningDto) {
         List<Screening> screeningList = screeningRepository.findAllByRoomName(screeningDto.getRoomName());
-        Optional<Movie> newMovie = movieRepository.findById(screeningDto.getMovieTitle());
+        Optional<Movie> newMovie = movieService.getMovieByTitle(screeningDto.getMovieTitle());
         int newLength = 0;
         if (newMovie.isPresent()) {
             newLength = newMovie.get().getLength();
@@ -96,7 +109,7 @@ public class ScreeningServiceImpl implements ScreeningService {
         LocalDateTime newStartedAt = LocalDateTime.parse(screeningDto.getStartedAt(), formatter);
         LocalDateTime newFinishedAt = newStartedAt.plusMinutes(newLength + 1);
         for (Screening screening : screeningList) {
-            Optional<Movie> existingMovie = movieRepository.findById(screening.getMovieTitle());
+            Optional<Movie> existingMovie = movieService.getMovieByTitle(screening.getMovieTitle());
             int existingLength = 0;
             if (existingMovie.isPresent()) {
                 existingLength = existingMovie.get().getLength();
@@ -116,7 +129,7 @@ public class ScreeningServiceImpl implements ScreeningService {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
         LocalDateTime newStartedAt = LocalDateTime.parse(screeningDto.getStartedAt(), formatter);
         for (Screening screening : screeningList) {
-            Optional<Movie> existingMovie = movieRepository.findById(screening.getMovieTitle());
+            Optional<Movie> existingMovie = movieService.getMovieByTitle(screening.getMovieTitle());
             int existingLength = 0;
             if (existingMovie.isPresent()) {
                 existingLength = existingMovie.get().getLength();

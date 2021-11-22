@@ -26,8 +26,8 @@ public class MovieServiceImpl implements MovieService {
         Objects.requireNonNull(movieDto.getTitle(), "Movie title cannot be null");
         Objects.requireNonNull(movieDto.getGenre(), "Movie genre cannot be null");
         Objects.requireNonNull(movieDto.getLength(), "Movie length cannot be null");
-        Movie movie = new Movie(movieDto.getTitle(), movieDto.getGenre(), movieDto.getLength());
-        movieRepository.save(movie);
+        Movie movie = new Movie(movieDto.getTitle(), movieDto.getGenre(), movieDto.getLength(), null);
+        saveMovie(movie);
         return "Created movie: " + movie;
     }
 
@@ -44,7 +44,7 @@ public class MovieServiceImpl implements MovieService {
         Movie movie = movieOptional.get();
         movie.setGenre(movieDto.getGenre());
         movie.setLength(movieDto.getLength());
-        movieRepository.save(movie);
+        saveMovie(movie);
         return "Updated movie: " + movie;
     }
 
@@ -67,6 +67,11 @@ public class MovieServiceImpl implements MovieService {
     @Override
     public Optional<Movie> getMovieByTitle(String title) {
         return movieRepository.findById(title);
+    }
+
+    @Override
+    public void saveMovie(Movie movie) {
+        movieRepository.save(movie);
     }
 
     private MovieDto convertEntityToDto(Movie movie) {

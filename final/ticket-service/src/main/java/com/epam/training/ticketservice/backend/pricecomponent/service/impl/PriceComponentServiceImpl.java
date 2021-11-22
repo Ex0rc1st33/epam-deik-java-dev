@@ -2,15 +2,15 @@ package com.epam.training.ticketservice.backend.pricecomponent.service.impl;
 
 import com.epam.training.ticketservice.backend.booking.model.BookingDto;
 import com.epam.training.ticketservice.backend.movie.persistence.entity.Movie;
-import com.epam.training.ticketservice.backend.movie.persistence.repository.MovieRepository;
+import com.epam.training.ticketservice.backend.movie.service.MovieService;
 import com.epam.training.ticketservice.backend.pricecomponent.model.PriceComponentDto;
 import com.epam.training.ticketservice.backend.pricecomponent.persistence.entity.PriceComponent;
 import com.epam.training.ticketservice.backend.pricecomponent.persistence.repository.PriceComponentRepository;
 import com.epam.training.ticketservice.backend.pricecomponent.service.PriceComponentService;
 import com.epam.training.ticketservice.backend.room.persistence.entity.Room;
-import com.epam.training.ticketservice.backend.room.persistence.repository.RoomRepository;
+import com.epam.training.ticketservice.backend.room.service.RoomService;
 import com.epam.training.ticketservice.backend.screening.persistence.entity.Screening;
-import com.epam.training.ticketservice.backend.screening.persistence.repository.ScreeningRepository;
+import com.epam.training.ticketservice.backend.screening.service.ScreeningService;
 import org.springframework.stereotype.Service;
 
 import java.util.Objects;
@@ -20,18 +20,18 @@ import java.util.Optional;
 public class PriceComponentServiceImpl implements PriceComponentService {
 
     private final PriceComponentRepository priceComponentRepository;
-    private final RoomRepository roomRepository;
-    private final MovieRepository movieRepository;
-    private final ScreeningRepository screeningRepository;
+    private final MovieService movieService;
+    private final RoomService roomService;
+    private final ScreeningService screeningService;
 
     public PriceComponentServiceImpl(PriceComponentRepository priceComponentRepository,
-                                     RoomRepository roomRepository,
-                                     MovieRepository movieRepository,
-                                     ScreeningRepository screeningRepository) {
+                                     MovieService movieService,
+                                     RoomService roomService,
+                                     ScreeningService screeningService) {
         this.priceComponentRepository = priceComponentRepository;
-        this.roomRepository = roomRepository;
-        this.movieRepository = movieRepository;
-        this.screeningRepository = screeningRepository;
+        this.movieService = movieService;
+        this.roomService = roomService;
+        this.screeningService = screeningService;
     }
 
     @Override
@@ -50,13 +50,13 @@ public class PriceComponentServiceImpl implements PriceComponentService {
         if (priceComponentOptional.isEmpty()) {
             return "Price component does not exist";
         }
-        Optional<Room> roomOptional = roomRepository.findById(roomName);
+        Optional<Room> roomOptional = roomService.getRoomByName(roomName);
         if (roomOptional.isEmpty()) {
             return "Room does not exist";
         }
         Room room = roomOptional.get();
         room.setPriceComponent(componentName);
-        roomRepository.save(room);
+        roomService.saveRoom(room);
         return "Attached " + priceComponentOptional.get() + " component to " + room + " room";
     }
 
@@ -66,13 +66,13 @@ public class PriceComponentServiceImpl implements PriceComponentService {
         if (priceComponentOptional.isEmpty()) {
             return "Price component does not exist";
         }
-        Optional<Movie> movieOptional = movieRepository.findById(movieTitle);
+        Optional<Movie> movieOptional = movieService.getMovieByTitle(movieTitle);
         if (movieOptional.isEmpty()) {
             return "Movie does not exist";
         }
         Movie movie = movieOptional.get();
         movie.setPriceComponent(componentName);
-        movieRepository.save(movie);
+        movieService.saveMovie(movie);
         return "Attached " + priceComponentOptional.get() + " component to " + movie + " movie";
     }
 
@@ -85,23 +85,22 @@ public class PriceComponentServiceImpl implements PriceComponentService {
         if (priceComponentOptional.isEmpty()) {
             return "Price component does not exist";
         }
-        Optional<Screening> screeningOptional = screeningRepository
-                .findByMovieTitleAndRoomNameAndStartedAt(movieTitle, roomName, startedAt);
+        Optional<Screening> screeningOptional = screeningService
+                .getMovieByTitleAndRoomNameAndStartedAt(movieTitle, roomName, startedAt);
         if (screeningOptional.isEmpty()) {
             return "Screening does not exist";
         }
         Screening screening = screeningOptional.get();
         screening.setPriceComponent(componentName);
-        screeningRepository.save(screening);
+        screeningService.saveScreening(screening);
         return "Attached " + priceComponentOptional.get() + " component to " + screening + " screening";
     }
 
     @Override
-    public Integer showPriceFor(BookingDto bookingDto) {
-        Room room = roomRepository.findById(bookingDto.getRoomName()).orElseThrow();
-        Movie movie = movieRepository.findById(bookingDto.getMovieTitle()).orElseThrow();
-        Screening screening = screeningRepository
-                .findByMovieTitleAndRoomNameAndStartedAt(bookingDto.getMovieTitle(),
+    public Integer showPriceForComponents(BookingDto bookingDto) {
+        Room room = roomService.getRoomByName(bookingDto.getRoomName()).orElseThrow();
+        Movie movie = movieService.getMovieByTitle(bookingDto.getMovieTitle()).orElseThrow();
+        Screening screening = screeningService.getMovieByTitleAndRoomNameAndStartedAt(bookingDto.getMovieTitle(),
                         bookingDto.getRoomName(),
                         bookingDto.getStartedAt())
                 .orElseThrow();

@@ -78,7 +78,7 @@ public class PriceCommand {
                 .withSeats(seats)
                 .build();
         return "The price for this booking would be "
-                + (priceComponentService.showPriceFor(bookingDto) + bookingService.getBasePrice())
+                + (bookingService.calculateNewBookingTotalPrice(bookingDto))
                 + " HUF";
     }
 
