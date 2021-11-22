@@ -1,8 +1,8 @@
 package com.epam.training.ticketservice.backend.user.service.impl;
 
-import com.epam.training.ticketservice.backend.user.model.UserDTO;
-import com.epam.training.ticketservice.backend.user.persistance.entity.User;
-import com.epam.training.ticketservice.backend.user.persistance.repository.UserRepository;
+import com.epam.training.ticketservice.backend.user.model.UserDto;
+import com.epam.training.ticketservice.backend.user.persistence.entity.User;
+import com.epam.training.ticketservice.backend.user.persistence.repository.UserRepository;
 import com.epam.training.ticketservice.backend.user.service.UserService;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,7 +15,7 @@ import java.util.Optional;
 @AllArgsConstructor
 public class UserServiceImpl implements UserService {
 
-    private UserDTO loggedInUser = null;
+    private UserDto loggedInUser = null;
     private final UserRepository userRepository;
 
     @Autowired
@@ -27,12 +27,13 @@ public class UserServiceImpl implements UserService {
     public String signInPrivileged(String username, String password) {
         Objects.requireNonNull(username, "Username cannot be null");
         Objects.requireNonNull(password, "Password cannot be null");
-        Optional<User> userOptional = userRepository.findByUsernameAndPasswordAndRole(username, password, User.Role.ADMIN);
+        Optional<User> userOptional = userRepository
+                .findByUsernameAndPasswordAndRole(username, password, User.Role.ADMIN);
         if (userOptional.isEmpty()) {
             return "Login failed due to incorrect credentials";
         }
         User user = userOptional.get();
-        loggedInUser = UserDTO.builder()
+        loggedInUser = UserDto.builder()
                 .withUsername(user.getUsername())
                 .withRole(user.getRole())
                 .build();
@@ -56,12 +57,13 @@ public class UserServiceImpl implements UserService {
     public String signIn(String username, String password) {
         Objects.requireNonNull(username, "Username cannot be null");
         Objects.requireNonNull(password, "Password cannot be null");
-        Optional<User> userOptional = userRepository.findByUsernameAndPasswordAndRole(username, password, User.Role.USER);
+        Optional<User> userOptional = userRepository
+                .findByUsernameAndPasswordAndRole(username, password, User.Role.USER);
         if (userOptional.isEmpty()) {
             return "Login failed due to incorrect credentials";
         }
         User user = userOptional.get();
-        loggedInUser = UserDTO.builder()
+        loggedInUser = UserDto.builder()
                 .withUsername(user.getUsername())
                 .withRole(user.getRole())
                 .build();
@@ -70,7 +72,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public String signOut() {
-        UserDTO previousUser = loggedInUser;
+        UserDto previousUser = loggedInUser;
         loggedInUser = null;
         if (previousUser == null) {
             return "You're currently signed out, you need to sign in first";
@@ -79,7 +81,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Optional<UserDTO> getLoggedInUser() {
+    public Optional<UserDto> getLoggedInUser() {
         return Optional.ofNullable(loggedInUser);
     }
 

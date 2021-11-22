@@ -1,15 +1,15 @@
 package com.epam.training.ticketservice.backend.screening.service;
 
-import com.epam.training.ticketservice.backend.screening.model.ScreeningDTO;
+import com.epam.training.ticketservice.backend.screening.model.ScreeningDto;
 
 import java.util.List;
 
 public interface ScreeningService {
 
-    String createScreening(ScreeningDTO screening);
+    String createScreening(ScreeningDto screening);
 
-    String deleteScreening(ScreeningDTO screening);
+    String deleteScreening(ScreeningDto screening);
 
-    List<ScreeningDTO> listScreenings();
+    List<ScreeningDto> listScreenings();
 
 }

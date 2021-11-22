@@ -1,9 +1,9 @@
 package com.epam.training.ticketservice.ui.command;
 
-import com.epam.training.ticketservice.backend.movie.model.MovieDTO;
+import com.epam.training.ticketservice.backend.movie.model.MovieDto;
 import com.epam.training.ticketservice.backend.movie.service.MovieService;
-import com.epam.training.ticketservice.backend.user.model.UserDTO;
-import com.epam.training.ticketservice.backend.user.persistance.entity.User;
+import com.epam.training.ticketservice.backend.user.model.UserDto;
+import com.epam.training.ticketservice.backend.user.persistence.entity.User;
 import com.epam.training.ticketservice.backend.user.service.UserService;
 import org.springframework.shell.Availability;
 import org.springframework.shell.standard.ShellComponent;
@@ -27,7 +27,7 @@ public class MovieCommand {
     @ShellMethodAvailability("isAvailable")
     @ShellMethod(key = "create movie", value = "Create new movie")
     public String createMovie(String title, String genre, Integer length) {
-        MovieDTO movie = MovieDTO.builder()
+        MovieDto movie = MovieDto.builder()
                 .withTitle(title)
                 .withGenre(genre)
                 .withLength(length)
@@ -38,7 +38,7 @@ public class MovieCommand {
     @ShellMethodAvailability("isAvailable")
     @ShellMethod(key = "update movie", value = "Update existing movie")
     public String updateMovie(String title, String genre, Integer length) {
-        MovieDTO movie = MovieDTO.builder()
+        MovieDto movie = MovieDto.builder()
                 .withTitle(title)
                 .withGenre(genre)
                 .withLength(length)
@@ -54,19 +54,19 @@ public class MovieCommand {
 
     @ShellMethod(key = "list movies", value = "List all existing movies")
     public String listMovies() {
-        List<MovieDTO> movies = movieService.listMovies();
+        List<MovieDto> movies = movieService.listMovies();
         if (movies.size() == 0) {
             return "There are no movies at the moment";
         }
         StringBuilder buffer = new StringBuilder();
-        for (MovieDTO movie : movies) {
+        for (MovieDto movie : movies) {
             buffer.append(movie).append("\n");
         }
         return buffer.deleteCharAt(buffer.length() - 1).toString();
     }
 
     private Availability isAvailable() {
-        Optional<UserDTO> user = userService.getLoggedInUser();
+        Optional<UserDto> user = userService.getLoggedInUser();
         if (user.isPresent() && user.get().getRole() == User.Role.ADMIN) {
             return Availability.available();
         }

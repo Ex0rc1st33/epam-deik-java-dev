@@ -1,6 +1,6 @@
 package com.epam.training.ticketservice.backend.user.service;
 
-import com.epam.training.ticketservice.backend.user.model.UserDTO;
+import com.epam.training.ticketservice.backend.user.model.UserDto;
 
 import java.util.Optional;
 
@@ -14,6 +14,6 @@ public interface UserService {
 
     String signOut();
 
-    Optional<UserDTO> getLoggedInUser();
+    Optional<UserDto> getLoggedInUser();
 
 }
