@@ -27,7 +27,10 @@ public class BookingCommand {
     @ShellMethod(key = "book", value = "Create new booking")
     public String book(String movieTitle, String roomName, String startedAt, String seats) {
         Optional<UserDto> loggedInUser = userService.getLoggedInUser();
-        String user = loggedInUser.orElseThrow().getUsername();
+        if (loggedInUser.isEmpty()) {
+            return "You need to sign in first";
+        }
+        String user = loggedInUser.get().getUsername();
         BookingDto bookingDto = BookingDto.builder()
                 .withMovieTitle(movieTitle)
                 .withRoomName(roomName)
