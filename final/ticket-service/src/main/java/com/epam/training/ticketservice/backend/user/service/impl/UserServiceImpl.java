@@ -25,8 +25,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public String signInPrivileged(String username, String password) {
-        Objects.requireNonNull(username, "Username cannot be null");
-        Objects.requireNonNull(password, "Password cannot be null");
+        checkValid(username, password);
         Optional<User> userOptional = userRepository
                 .findByUsernameAndPasswordAndRole(username, password, User.Role.ADMIN);
         if (userOptional.isEmpty()) {
@@ -42,21 +41,15 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public String signUp(String username, String password) {
-        Objects.requireNonNull(username, "Username cannot be null");
-        Objects.requireNonNull(password, "Password cannot be null");
+        checkValid(username, password);
         User user = new User(username, password, User.Role.USER);
-        try {
-            userRepository.save(user);
-            return "Signed up new user: " + user;
-        } catch (Exception e) {
-            return "An unexpected exception occurred";
-        }
+        userRepository.save(user);
+        return "Signed up new user: " + user;
     }
 
     @Override
     public String signIn(String username, String password) {
-        Objects.requireNonNull(username, "Username cannot be null");
-        Objects.requireNonNull(password, "Password cannot be null");
+        checkValid(username, password);
         Optional<User> userOptional = userRepository
                 .findByUsernameAndPasswordAndRole(username, password, User.Role.USER);
         if (userOptional.isEmpty()) {
@@ -83,6 +76,11 @@ public class UserServiceImpl implements UserService {
     @Override
     public Optional<UserDto> getLoggedInUser() {
         return Optional.ofNullable(loggedInUser);
+    }
+
+    private void checkValid(String username, String password) {
+        Objects.requireNonNull(username, "Username cannot be null");
+        Objects.requireNonNull(password, "Password cannot be null");
     }
 
 }

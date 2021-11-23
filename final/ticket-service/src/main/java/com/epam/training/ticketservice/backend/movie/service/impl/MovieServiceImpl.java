@@ -25,7 +25,7 @@ public class MovieServiceImpl implements MovieService {
         checkValid(movieDto);
         Movie movie = new Movie(movieDto.getTitle(), movieDto.getGenre(), movieDto.getLength(), null);
         saveMovie(movie);
-        return "Created movie" + movie;
+        return "Created movie: " + movie;
     }
 
     @Override
@@ -39,7 +39,7 @@ public class MovieServiceImpl implements MovieService {
         movie.setGenre(movieDto.getGenre());
         movie.setLength(movieDto.getLength());
         saveMovie(movie);
-        return "Updated movie" + movie;
+        return "Updated movie: " + movie;
     }
 
     @Override
@@ -50,7 +50,7 @@ public class MovieServiceImpl implements MovieService {
         }
         Movie movie = movieOptional.get();
         movieRepository.delete(movie);
-        return "Deleted movie" + movie;
+        return "Deleted movie: " + movie;
     }
 
     @Override

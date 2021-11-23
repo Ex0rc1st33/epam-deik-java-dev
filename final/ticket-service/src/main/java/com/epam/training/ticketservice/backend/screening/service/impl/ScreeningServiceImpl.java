@@ -2,6 +2,7 @@ package com.epam.training.ticketservice.backend.screening.service.impl;
 
 import com.epam.training.ticketservice.backend.movie.persistence.entity.Movie;
 import com.epam.training.ticketservice.backend.movie.service.MovieService;
+import com.epam.training.ticketservice.backend.room.model.RoomDto;
 import com.epam.training.ticketservice.backend.room.persistence.entity.Room;
 import com.epam.training.ticketservice.backend.room.service.RoomService;
 import com.epam.training.ticketservice.backend.screening.model.ScreeningDto;
@@ -34,18 +35,9 @@ public class ScreeningServiceImpl implements ScreeningService {
 
     @Override
     public String createScreening(ScreeningDto screeningDto) {
-        Objects.requireNonNull(screeningDto, "Screening cannot be null");
-        Objects.requireNonNull(screeningDto.getMovieTitle(), "Screening movieTitle cannot be null");
-        Objects.requireNonNull(screeningDto.getRoomName(), "Screening roomName cannot be null");
-        Objects.requireNonNull(screeningDto.getStartedAt(), "Screening startedAt cannot be null");
-        Optional<Movie> movie = movieService.getMovieByTitle(screeningDto.getMovieTitle());
-        if (movie.isEmpty()) {
-            return "Movie does not exist";
-        }
-        Optional<Room> room = roomService.getRoomByName(screeningDto.getRoomName());
-        if (room.isEmpty()) {
-            return "Room does not exist";
-        }
+        checkValid(screeningDto);
+        movieService.getMovieByTitle(screeningDto.getMovieTitle()).orElseThrow();
+        roomService.getRoomByName(screeningDto.getRoomName()).orElseThrow();
         if (isOverlapping(screeningDto)) {
             return "There is an overlapping screening";
         }
@@ -101,19 +93,13 @@ public class ScreeningServiceImpl implements ScreeningService {
     private boolean isOverlapping(ScreeningDto screeningDto) {
         List<Screening> screeningList = screeningRepository.findAllByRoomName(screeningDto.getRoomName());
         Optional<Movie> newMovie = movieService.getMovieByTitle(screeningDto.getMovieTitle());
-        int newLength = 0;
-        if (newMovie.isPresent()) {
-            newLength = newMovie.get().getLength();
-        }
+        int newLength = newMovie.orElseThrow().getLength();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
         LocalDateTime newStartedAt = LocalDateTime.parse(screeningDto.getStartedAt(), formatter);
         LocalDateTime newFinishedAt = newStartedAt.plusMinutes(newLength + 1);
         for (Screening screening : screeningList) {
             Optional<Movie> existingMovie = movieService.getMovieByTitle(screening.getMovieTitle());
-            int existingLength = 0;
-            if (existingMovie.isPresent()) {
-                existingLength = existingMovie.get().getLength();
-            }
+            int existingLength = existingMovie.orElseThrow().getLength();
             LocalDateTime existingStartedAt = LocalDateTime.parse(screening.getStartedAt(), formatter);
             LocalDateTime existingFinishesAt = existingStartedAt.plusMinutes(existingLength + 1);
             if ((newStartedAt.isAfter(existingStartedAt) && newStartedAt.isBefore(existingFinishesAt))
@@ -130,10 +116,7 @@ public class ScreeningServiceImpl implements ScreeningService {
         LocalDateTime newStartedAt = LocalDateTime.parse(screeningDto.getStartedAt(), formatter);
         for (Screening screening : screeningList) {
             Optional<Movie> existingMovie = movieService.getMovieByTitle(screening.getMovieTitle());
-            int existingLength = 0;
-            if (existingMovie.isPresent()) {
-                existingLength = existingMovie.get().getLength();
-            }
+            int existingLength = existingMovie.orElseThrow().getLength();
             LocalDateTime startOfBreak = LocalDateTime.parse(screening.getStartedAt(), formatter)
                     .plusMinutes(existingLength);
             LocalDateTime endOfBreak = startOfBreak.plusMinutes(10 + 1);
@@ -142,6 +125,13 @@ public class ScreeningServiceImpl implements ScreeningService {
             }
         }
         return false;
+    }
+
+    private void checkValid(ScreeningDto screeningDto) {
+        Objects.requireNonNull(screeningDto, "Screening cannot be null");
+        Objects.requireNonNull(screeningDto.getMovieTitle(), "Screening movieTitle cannot be null");
+        Objects.requireNonNull(screeningDto.getRoomName(), "Screening roomName cannot be null");
+        Objects.requireNonNull(screeningDto.getStartedAt(), "Screening startedAt cannot be null");
     }
 
 }

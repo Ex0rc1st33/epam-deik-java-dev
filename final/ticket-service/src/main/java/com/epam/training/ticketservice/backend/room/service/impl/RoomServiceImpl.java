@@ -1,6 +1,5 @@
 package com.epam.training.ticketservice.backend.room.service.impl;
 
-import com.epam.training.ticketservice.backend.movie.persistence.entity.Movie;
 import com.epam.training.ticketservice.backend.room.model.RoomDto;
 import com.epam.training.ticketservice.backend.room.persistence.entity.Room;
 import com.epam.training.ticketservice.backend.room.persistence.repository.RoomRepository;
@@ -23,10 +22,7 @@ public class RoomServiceImpl implements RoomService {
 
     @Override
     public String createRoom(RoomDto roomDto) {
-        Objects.requireNonNull(roomDto, "Room cannot be null");
-        Objects.requireNonNull(roomDto.getName(), "Room name cannot be null");
-        Objects.requireNonNull(roomDto.getRowCount(), "Room rowCount cannot be null");
-        Objects.requireNonNull(roomDto.getColCount(), "Room colCount cannot be null");
+        checkValid(roomDto);
         Room room = new Room(roomDto.getName(), roomDto.getRowCount(), roomDto.getColCount(), null);
         saveRoom(room);
         return "Created room: " + room;
@@ -34,10 +30,7 @@ public class RoomServiceImpl implements RoomService {
 
     @Override
     public String updateRoom(RoomDto roomDto) {
-        Objects.requireNonNull(roomDto, "Room cannot be null");
-        Objects.requireNonNull(roomDto.getName(), "Room name cannot be null");
-        Objects.requireNonNull(roomDto.getRowCount(), "Room rowCount cannot be null");
-        Objects.requireNonNull(roomDto.getColCount(), "Room colCount cannot be null");
+        checkValid(roomDto);
         Optional<Room> roomOptional = roomRepository.findById(roomDto.getName());
         if (roomOptional.isEmpty()) {
             return "Room does not exist";
@@ -81,6 +74,13 @@ public class RoomServiceImpl implements RoomService {
                 .withRowCount(room.getRowCount())
                 .withColCount(room.getColCount())
                 .build();
+    }
+
+    private void checkValid(RoomDto roomDto) {
+        Objects.requireNonNull(roomDto, "Room cannot be null");
+        Objects.requireNonNull(roomDto.getName(), "Room name cannot be null");
+        Objects.requireNonNull(roomDto.getRowCount(), "Room rowCount cannot be null");
+        Objects.requireNonNull(roomDto.getColCount(), "Room colCount cannot be null");
     }
 
 }

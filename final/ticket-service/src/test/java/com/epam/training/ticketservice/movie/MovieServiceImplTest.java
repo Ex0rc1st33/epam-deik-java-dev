@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -30,7 +29,7 @@ public class MovieServiceImplTest {
                 .withLength(150)
                 .build();
         when(movieRepository.save(movie)).thenReturn(movie);
-        String expected = "Created movie" + movie;
+        String expected = "Created movie: " + movie;
 
         //When
         String actual = underTest.createMovie(movieDto);
@@ -38,45 +37,6 @@ public class MovieServiceImplTest {
         //Then
         assertEquals(expected, actual);
         verify(movieRepository).save(movie);
-    }
-
-    @Test
-    public void testCreateMovieShouldThrowNullPointerExceptionWhenGivenMovieInvalid() {
-        //Given-When-Then
-        assertThrows(NullPointerException.class, () -> underTest.createMovie(null));
-    }
-
-    @Test
-    public void testCreateMovieShouldThrowNullPointerExceptionWhenGivenMovieTitleInvalid() {
-        //Given-When-Then
-        MovieDto movieDto = MovieDto.builder()
-                .withTitle(null)
-                .withGenre("fantasy")
-                .withLength(150)
-                .build();
-        assertThrows(NullPointerException.class, () -> underTest.createMovie(movieDto));
-    }
-
-    @Test
-    public void testCreateMovieShouldThrowNullPointerExceptionWhenGivenMovieGenreInvalid() {
-        //Given-When-Then
-        MovieDto movieDto = MovieDto.builder()
-                .withTitle("Lord of the Rings")
-                .withGenre(null)
-                .withLength(150)
-                .build();
-        assertThrows(NullPointerException.class, () -> underTest.createMovie(movieDto));
-    }
-
-    @Test
-    public void testCreateMovieShouldThrowNullPointerExceptionWhenGivenMovieLengthInvalid() {
-        //Given-When-Then
-        MovieDto movieDto = MovieDto.builder()
-                .withTitle("Lord of the Rings")
-                .withGenre("fantasy")
-                .withLength(null)
-                .build();
-        assertThrows(NullPointerException.class, () -> underTest.createMovie(movieDto));
     }
 
     @Test
@@ -91,7 +51,7 @@ public class MovieServiceImplTest {
         when(movieRepository.findById(movieDto.getTitle())).thenReturn(Optional.of(original));
         Movie result = new Movie("Lord of the Rings", "fantasy", 200, null);
         when(movieRepository.save(result)).thenReturn(result);
-        String expected = "Updated movie" + result;
+        String expected = "Updated movie: " + result;
 
         //When
         String actual = underTest.updateMovie(movieDto);
@@ -131,7 +91,7 @@ public class MovieServiceImplTest {
                 .withLength(150)
                 .build();
         when(movieRepository.findById(movieDto.getTitle())).thenReturn(Optional.of(movie));
-        String expected = "Deleted movie" + movie;
+        String expected = "Deleted movie: " + movie;
 
         //When
         String actual = underTest.deleteMovie(movieDto.getTitle());
