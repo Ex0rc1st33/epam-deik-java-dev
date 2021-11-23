@@ -31,11 +31,8 @@ public class RoomServiceImpl implements RoomService {
     @Override
     public String updateRoom(RoomDto roomDto) {
         checkValid(roomDto);
-        Optional<Room> roomOptional = roomRepository.findById(roomDto.getName());
-        if (roomOptional.isEmpty()) {
-            return "Room does not exist";
-        }
-        Room room = roomOptional.get();
+        Room room = roomRepository.findById(roomDto.getName())
+                .orElseThrow(() -> new IllegalStateException("Room does not exist"));
         room.setRowCount(roomDto.getRowCount());
         room.setColCount(roomDto.getColCount());
         saveRoom(room);
@@ -44,11 +41,8 @@ public class RoomServiceImpl implements RoomService {
 
     @Override
     public String deleteRoom(String name) {
-        Optional<Room> roomOptional = roomRepository.findById(name);
-        if (roomOptional.isEmpty()) {
-            return "Room does not exist";
-        }
-        Room room = roomOptional.get();
+        Room room = roomRepository.findById(name)
+                .orElseThrow(() -> new IllegalStateException("Room does not exist"));
         roomRepository.delete(room);
         return "Deleted room: " + room;
     }

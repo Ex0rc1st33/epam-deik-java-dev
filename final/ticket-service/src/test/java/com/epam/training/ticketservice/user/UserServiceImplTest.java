@@ -3,6 +3,7 @@ package com.epam.training.ticketservice.user;
 import com.epam.training.ticketservice.backend.user.model.UserDto;
 import com.epam.training.ticketservice.backend.user.persistence.entity.User;
 import com.epam.training.ticketservice.backend.user.persistence.repository.UserRepository;
+import com.epam.training.ticketservice.backend.user.service.UserService;
 import com.epam.training.ticketservice.backend.user.service.impl.UserServiceImpl;
 import org.junit.jupiter.api.Test;
 
@@ -15,7 +16,7 @@ import static org.mockito.Mockito.verify;
 public class UserServiceImplTest {
 
     private final UserRepository userRepository = mock(UserRepository.class);
-    private final UserServiceImpl underTest = new UserServiceImpl(userRepository);
+    private final UserService underTest = new UserServiceImpl(userRepository);
 
     @Test
     public void testSignInPrivilegedShouldCallUserRepositoryAndReturnCorrectMessageWhenGivenUsernameAndPasswordValid() {

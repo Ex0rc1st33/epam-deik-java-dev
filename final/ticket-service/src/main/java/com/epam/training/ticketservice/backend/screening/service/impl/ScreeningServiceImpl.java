@@ -36,8 +36,10 @@ public class ScreeningServiceImpl implements ScreeningService {
     @Override
     public String createScreening(ScreeningDto screeningDto) {
         checkValid(screeningDto);
-        movieService.getMovieByTitle(screeningDto.getMovieTitle()).orElseThrow();
-        roomService.getRoomByName(screeningDto.getRoomName()).orElseThrow();
+        movieService.getMovieByTitle(screeningDto.getMovieTitle())
+                .orElseThrow(() -> new IllegalStateException("Movie does not exist"));
+        roomService.getRoomByName(screeningDto.getRoomName())
+                .orElseThrow(() -> new IllegalStateException("Room does not exist"));
         if (isOverlapping(screeningDto)) {
             return "There is an overlapping screening";
         }
@@ -54,13 +56,10 @@ public class ScreeningServiceImpl implements ScreeningService {
 
     @Override
     public String deleteScreening(ScreeningDto screeningDto) {
-        Optional<Screening> screeningOptional = screeningRepository
+        Screening screening = screeningRepository
                 .findByMovieTitleAndRoomNameAndStartedAt(screeningDto.getMovieTitle(),
-                        screeningDto.getRoomName(), screeningDto.getStartedAt());
-        if (screeningOptional.isEmpty()) {
-            return "Screening does not exist";
-        }
-        Screening screening = screeningOptional.get();
+                        screeningDto.getRoomName(), screeningDto.getStartedAt())
+                .orElseThrow(() -> new IllegalStateException("Screening does not exist"));
         screeningRepository.delete(screening);
         return "Deleted screening: " + screening;
     }

@@ -31,11 +31,8 @@ public class MovieServiceImpl implements MovieService {
     @Override
     public String updateMovie(MovieDto movieDto) {
         checkValid(movieDto);
-        Optional<Movie> movieOptional = movieRepository.findById(movieDto.getTitle());
-        if (movieOptional.isEmpty()) {
-            return "Movie does not exist";
-        }
-        Movie movie = movieOptional.get();
+        Movie movie = movieRepository.findById(movieDto.getTitle())
+                .orElseThrow(() -> new IllegalStateException("Movie does not exist"));
         movie.setGenre(movieDto.getGenre());
         movie.setLength(movieDto.getLength());
         saveMovie(movie);
@@ -44,11 +41,8 @@ public class MovieServiceImpl implements MovieService {
 
     @Override
     public String deleteMovie(String title) {
-        Optional<Movie> movieOptional = movieRepository.findById(title);
-        if (movieOptional.isEmpty()) {
-            return "Movie does not exist";
-        }
-        Movie movie = movieOptional.get();
+        Movie movie = movieRepository.findById(title)
+                .orElseThrow(() -> new IllegalStateException("Movie does not exist"));
         movieRepository.delete(movie);
         return "Deleted movie: " + movie;
     }

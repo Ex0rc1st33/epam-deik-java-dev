@@ -3,6 +3,7 @@ package com.epam.training.ticketservice.room;
 import com.epam.training.ticketservice.backend.room.model.RoomDto;
 import com.epam.training.ticketservice.backend.room.persistence.entity.Room;
 import com.epam.training.ticketservice.backend.room.persistence.repository.RoomRepository;
+import com.epam.training.ticketservice.backend.room.service.RoomService;
 import com.epam.training.ticketservice.backend.room.service.impl.RoomServiceImpl;
 import org.junit.jupiter.api.Test;
 
@@ -10,13 +11,14 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 import static org.mockito.Mockito.verify;
 
 public class RoomServiceImplTest {
 
     private final RoomRepository roomRepository = mock(RoomRepository.class);
-    private final RoomServiceImpl underTest = new RoomServiceImpl(roomRepository);
+    private final RoomService underTest = new RoomServiceImpl(roomRepository);
 
     @Test
     public void testCreateRoomShouldCallRoomRepositoryAndReturnCorrectMessageWhenGivenRoomValid() {
@@ -62,7 +64,7 @@ public class RoomServiceImplTest {
     }
 
     @Test
-    public void testUpdateRoomShouldCallRoomRepositoryAndReturnErrorMessageWhenGivenRoomDoesNotExist() {
+    public void testUpdateRoomShouldThrowIllegalStateExceptionWhenGivenRoomDoesNotExist() {
         //Given
         RoomDto roomDto = RoomDto.builder()
                 .withName("Room1")
@@ -70,13 +72,9 @@ public class RoomServiceImplTest {
                 .withColCount(30)
                 .build();
         when(roomRepository.findById(roomDto.getName())).thenReturn(Optional.empty());
-        String expected = "Room does not exist";
 
-        //When
-        String actual = underTest.updateRoom(roomDto);
-
-        //Then
-        assertEquals(expected, actual);
+        //When-Then
+        assertThrows(IllegalStateException.class, () -> underTest.updateRoom(roomDto));
         verify(roomRepository).findById(roomDto.getName());
     }
 
@@ -102,7 +100,7 @@ public class RoomServiceImplTest {
     }
 
     @Test
-    public void testDeleteMovieShouldCallMovieRepositoryAndReturnErrorMessageWhenGivenMovieDoesNotExist() {
+    public void testDeleteMovieShouldThrowIllegalStateExceptionWhenGivenMovieDoesNotExist() {
         //Given
         RoomDto roomDto = RoomDto.builder()
                 .withName("Room1")
@@ -110,13 +108,9 @@ public class RoomServiceImplTest {
                 .withColCount(30)
                 .build();
         when(roomRepository.findById(roomDto.getName())).thenReturn(Optional.empty());
-        String expected = "Room does not exist";
 
-        //When
-        String actual = underTest.deleteRoom(roomDto.getName());
-
-        //Then
-        assertEquals(expected, actual);
+        //When-Then
+        assertThrows(IllegalStateException.class, () -> underTest.deleteRoom(roomDto.getName()));
         verify(roomRepository).findById(roomDto.getName());
     }
 

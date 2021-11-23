@@ -3,6 +3,7 @@ package com.epam.training.ticketservice.movie;
 import com.epam.training.ticketservice.backend.movie.model.MovieDto;
 import com.epam.training.ticketservice.backend.movie.persistence.entity.Movie;
 import com.epam.training.ticketservice.backend.movie.persistence.repository.MovieRepository;
+import com.epam.training.ticketservice.backend.movie.service.MovieService;
 import com.epam.training.ticketservice.backend.movie.service.impl.MovieServiceImpl;
 import org.junit.jupiter.api.Test;
 
@@ -10,6 +11,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -17,7 +19,7 @@ import static org.mockito.Mockito.when;
 public class MovieServiceImplTest {
 
     private final MovieRepository movieRepository = mock(MovieRepository.class);
-    private final MovieServiceImpl underTest = new MovieServiceImpl(movieRepository);
+    private final MovieService underTest = new MovieServiceImpl(movieRepository);
 
     @Test
     public void testCreateMovieShouldCallMovieRepositoryAndReturnCorrectMessageWhenGivenMovieValid() {
@@ -63,7 +65,7 @@ public class MovieServiceImplTest {
     }
 
     @Test
-    public void testUpdateMovieShouldCallMovieRepositoryAndReturnErrorMessageWhenGivenMovieDoesNotExist() {
+    public void testUpdateMovieShouldThrowIllegalStateExceptionWhenGivenMovieDoesNotExist() {
         //Given
         MovieDto movieDto = MovieDto.builder()
                 .withTitle("Lord of the Rings")
@@ -71,13 +73,9 @@ public class MovieServiceImplTest {
                 .withLength(200)
                 .build();
         when(movieRepository.findById(movieDto.getTitle())).thenReturn(Optional.empty());
-        String expected = "Movie does not exist";
 
-        //When
-        String actual = underTest.updateMovie(movieDto);
-
-        //Then
-        assertEquals(expected, actual);
+        //When-Then
+        assertThrows(IllegalStateException.class, () -> underTest.updateMovie(movieDto));
         verify(movieRepository).findById(movieDto.getTitle());
     }
 
@@ -103,7 +101,7 @@ public class MovieServiceImplTest {
     }
 
     @Test
-    public void testDeleteMovieShouldCallMovieRepositoryAndReturnErrorMessageWhenGivenMovieDoesNotExist() {
+    public void testDeleteMovieShouldThrowIllegalStateExceptionWhenGivenMovieDoesNotExist() {
         //Given
         MovieDto movieDto = MovieDto.builder()
                 .withTitle("Lord of the Rings")
@@ -111,13 +109,9 @@ public class MovieServiceImplTest {
                 .withLength(150)
                 .build();
         when(movieRepository.findById(movieDto.getTitle())).thenReturn(Optional.empty());
-        String expected = "Movie does not exist";
 
-        //When
-        String actual = underTest.deleteMovie(movieDto.getTitle());
-
-        //Then
-        assertEquals(expected, actual);
+        //When-Then
+        assertThrows(IllegalStateException.class, () -> underTest.deleteMovie(movieDto.getTitle()));
         verify(movieRepository).findById(movieDto.getTitle());
     }
 

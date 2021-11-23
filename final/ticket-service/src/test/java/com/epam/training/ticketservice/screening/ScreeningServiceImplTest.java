@@ -2,11 +2,13 @@ package com.epam.training.ticketservice.screening;
 
 import com.epam.training.ticketservice.backend.movie.persistence.entity.Movie;
 import com.epam.training.ticketservice.backend.movie.service.MovieService;
+import com.epam.training.ticketservice.backend.room.model.RoomDto;
 import com.epam.training.ticketservice.backend.room.persistence.entity.Room;
 import com.epam.training.ticketservice.backend.room.service.RoomService;
 import com.epam.training.ticketservice.backend.screening.model.ScreeningDto;
 import com.epam.training.ticketservice.backend.screening.persistence.entity.Screening;
 import com.epam.training.ticketservice.backend.screening.persistence.repository.ScreeningRepository;
+import com.epam.training.ticketservice.backend.screening.service.ScreeningService;
 import com.epam.training.ticketservice.backend.screening.service.impl.ScreeningServiceImpl;
 import org.junit.jupiter.api.Test;
 
@@ -14,6 +16,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 import static org.mockito.Mockito.verify;
 
@@ -34,7 +37,7 @@ public class ScreeningServiceImplTest {
     private final ScreeningRepository screeningRepository = mock(ScreeningRepository.class);
     private final MovieService movieService = mock(MovieService.class);
     private final RoomService roomService = mock(RoomService.class);
-    private final ScreeningServiceImpl underTest = new ScreeningServiceImpl(screeningRepository,
+    private final ScreeningService underTest = new ScreeningServiceImpl(screeningRepository,
             movieService,
             roomService);
 
@@ -63,6 +66,38 @@ public class ScreeningServiceImplTest {
         verify(screeningRepository).save(SCREENING_ENTITY);
         verify(screeningRepository, times(2)).findAllByRoomName(SCREENING_DTO.getRoomName());
         verify(movieService, times(2)).getMovieByTitle(screening.getMovieTitle());
+    }
+
+    @Test
+    public void testCreateScreeningShouldThrowIllegalStateExceptionWhenGivenMovieInvalid() {
+        //Given
+        ScreeningDto screeningDto = ScreeningDto.builder()
+                .withMovieTitle("Lord of the Rings")
+                .withRoomName("Room1")
+                .withStartedAt("2021-03-15 10:50")
+                .build();
+        when(movieService.getMovieByTitle(screeningDto.getMovieTitle())).thenReturn(Optional.empty());
+
+        //When-Then
+        assertThrows(IllegalStateException.class, () -> underTest.createScreening(screeningDto));
+        verify(movieService).getMovieByTitle(screeningDto.getMovieTitle());
+    }
+
+    @Test
+    public void testCreateScreeningShouldThrowIllegalStateExceptionWhenGiveRoomInvalid() {
+        //Given
+        ScreeningDto screeningDto = ScreeningDto.builder()
+                .withMovieTitle("Lord of the Rings")
+                .withRoomName("Room1")
+                .withStartedAt("2021-03-15 10:50")
+                .build();
+        when(movieService.getMovieByTitle(screeningDto.getMovieTitle())).thenReturn(Optional.of(MOVIE_ENTITY));
+        when(roomService.getRoomByName(screeningDto.getRoomName())).thenReturn(Optional.empty());
+
+        //When-Then
+        assertThrows(IllegalStateException.class, () -> underTest.createScreening(screeningDto));
+        verify(movieService).getMovieByTitle(screeningDto.getMovieTitle());
+        verify(roomService).getRoomByName(screeningDto.getRoomName());
     }
 
     @Test
@@ -143,22 +178,23 @@ public class ScreeningServiceImplTest {
     }
 
     @Test
-    public void testDeleteScreeningShouldCallScreeningRepositoryAndReturnErrorMessageWhenGivenScreeningDoesNotExist() {
+    public void testDeleteScreeningShouldThrowIllegalStateExceptionWhenGivenScreeningDoesNotExist() {
         //Given
-        when(screeningRepository.findByMovieTitleAndRoomNameAndStartedAt(SCREENING_DTO.getMovieTitle(),
-                SCREENING_DTO.getRoomName(),
-                SCREENING_DTO.getStartedAt())).
-                thenReturn(Optional.empty());
-        String expected = "Screening does not exist";
+        ScreeningDto screeningDto = ScreeningDto.builder()
+                .withMovieTitle("Lord of the Rings")
+                .withRoomName("Room1")
+                .withStartedAt("2021-03-15 10:50")
+                .build();
+        when(screeningRepository.findByMovieTitleAndRoomNameAndStartedAt(screeningDto.getMovieTitle(),
+                screeningDto.getRoomName(),
+                screeningDto.getStartedAt()))
+                .thenReturn(Optional.empty());
 
-        //When
-        String actual = underTest.deleteScreening(SCREENING_DTO);
-
-        //Then
-        assertEquals(expected, actual);
-        verify(screeningRepository).findByMovieTitleAndRoomNameAndStartedAt(SCREENING_DTO.getMovieTitle(),
-                SCREENING_DTO.getRoomName(),
-                SCREENING_DTO.getStartedAt());
+        //When-Then
+        assertThrows(IllegalStateException.class, () -> underTest.deleteScreening(screeningDto));
+        verify(screeningRepository).findByMovieTitleAndRoomNameAndStartedAt(screeningDto.getMovieTitle(),
+                screeningDto.getRoomName(),
+                screeningDto.getStartedAt());
     }
 
     @Test

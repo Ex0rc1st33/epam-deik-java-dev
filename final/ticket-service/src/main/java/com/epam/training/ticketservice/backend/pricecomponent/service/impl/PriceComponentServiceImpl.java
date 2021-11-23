@@ -7,6 +7,7 @@ import com.epam.training.ticketservice.backend.pricecomponent.model.PriceCompone
 import com.epam.training.ticketservice.backend.pricecomponent.persistence.entity.PriceComponent;
 import com.epam.training.ticketservice.backend.pricecomponent.persistence.repository.PriceComponentRepository;
 import com.epam.training.ticketservice.backend.pricecomponent.service.PriceComponentService;
+import com.epam.training.ticketservice.backend.room.model.RoomDto;
 import com.epam.training.ticketservice.backend.room.persistence.entity.Room;
 import com.epam.training.ticketservice.backend.room.service.RoomService;
 import com.epam.training.ticketservice.backend.screening.persistence.entity.Screening;
@@ -36,9 +37,7 @@ public class PriceComponentServiceImpl implements PriceComponentService {
 
     @Override
     public String createPriceComponent(PriceComponentDto priceComponentDto) {
-        Objects.requireNonNull(priceComponentDto, "Price component cannot be null");
-        Objects.requireNonNull(priceComponentDto.getName(), "Price component name cannot be null");
-        Objects.requireNonNull(priceComponentDto.getValue(), "Price component value cannot be null");
+        checkValid(priceComponentDto);
         PriceComponent priceComponent = new PriceComponent(priceComponentDto.getName(), priceComponentDto.getValue());
         priceComponentRepository.save(priceComponent);
         return "Created price component: " + priceComponent;
@@ -46,34 +45,24 @@ public class PriceComponentServiceImpl implements PriceComponentService {
 
     @Override
     public String attachPriceComponentToRoom(String componentName, String roomName) {
-        Optional<PriceComponent> priceComponentOptional = priceComponentRepository.findById(componentName);
-        if (priceComponentOptional.isEmpty()) {
-            return "Price component does not exist";
-        }
-        Optional<Room> roomOptional = roomService.getRoomByName(roomName);
-        if (roomOptional.isEmpty()) {
-            return "Room does not exist";
-        }
-        Room room = roomOptional.get();
+        PriceComponent priceComponent = priceComponentRepository.findById(componentName)
+                .orElseThrow(() -> new IllegalStateException("Price component does not exist"));
+        Room room = roomService.getRoomByName(roomName)
+                .orElseThrow(() -> new IllegalStateException("Room does not exist"));
         room.setPriceComponent(componentName);
         roomService.saveRoom(room);
-        return "Attached " + priceComponentOptional.get() + " component to " + room + " room";
+        return "Attached " + priceComponent + " component to " + room + " room";
     }
 
     @Override
     public String attachPriceComponentToMovie(String componentName, String movieTitle) {
-        Optional<PriceComponent> priceComponentOptional = priceComponentRepository.findById(componentName);
-        if (priceComponentOptional.isEmpty()) {
-            return "Price component does not exist";
-        }
-        Optional<Movie> movieOptional = movieService.getMovieByTitle(movieTitle);
-        if (movieOptional.isEmpty()) {
-            return "Movie does not exist";
-        }
-        Movie movie = movieOptional.get();
+        PriceComponent priceComponent = priceComponentRepository.findById(componentName)
+                .orElseThrow(() -> new IllegalStateException("Price component does not exist"));
+        Movie movie = movieService.getMovieByTitle(movieTitle)
+                .orElseThrow(() -> new IllegalStateException("Movie does not exist"));
         movie.setPriceComponent(componentName);
         movieService.saveMovie(movie);
-        return "Attached " + priceComponentOptional.get() + " component to " + movie + " movie";
+        return "Attached " + priceComponent + " component to " + movie + " movie";
     }
 
     @Override
@@ -81,29 +70,26 @@ public class PriceComponentServiceImpl implements PriceComponentService {
                                                   String movieTitle,
                                                   String roomName,
                                                   String startedAt) {
-        Optional<PriceComponent> priceComponentOptional = priceComponentRepository.findById(componentName);
-        if (priceComponentOptional.isEmpty()) {
-            return "Price component does not exist";
-        }
-        Optional<Screening> screeningOptional = screeningService
-                .getMovieByTitleAndRoomNameAndStartedAt(movieTitle, roomName, startedAt);
-        if (screeningOptional.isEmpty()) {
-            return "Screening does not exist";
-        }
-        Screening screening = screeningOptional.get();
+        PriceComponent priceComponent = priceComponentRepository.findById(componentName)
+                .orElseThrow(() -> new IllegalStateException("Price component does not exist"));
+        Screening screening = screeningService
+                .getMovieByTitleAndRoomNameAndStartedAt(movieTitle, roomName, startedAt)
+                .orElseThrow(() -> new IllegalStateException("Screening does not exist"));
         screening.setPriceComponent(componentName);
         screeningService.saveScreening(screening);
-        return "Attached " + priceComponentOptional.get() + " component to " + screening + " screening";
+        return "Attached " + priceComponent + " component to " + screening + " screening";
     }
 
     @Override
     public Integer showPriceForComponents(BookingDto bookingDto) {
-        Room room = roomService.getRoomByName(bookingDto.getRoomName()).orElseThrow();
-        Movie movie = movieService.getMovieByTitle(bookingDto.getMovieTitle()).orElseThrow();
+        Room room = roomService.getRoomByName(bookingDto.getRoomName())
+                .orElseThrow(() -> new IllegalStateException("Room does not exist"));
+        Movie movie = movieService.getMovieByTitle(bookingDto.getMovieTitle())
+                .orElseThrow(() -> new IllegalStateException("Movie does not exist"));
         Screening screening = screeningService.getMovieByTitleAndRoomNameAndStartedAt(bookingDto.getMovieTitle(),
                         bookingDto.getRoomName(),
                         bookingDto.getStartedAt())
-                .orElseThrow();
+                .orElseThrow(() -> new IllegalStateException("Screening does not exist"));
         String roomComponent = room.getPriceComponent();
         String movieComponent = movie.getPriceComponent();
         String screeningComponent = screening.getPriceComponent();
@@ -113,6 +99,12 @@ public class PriceComponentServiceImpl implements PriceComponentService {
                 .findById(movieComponent).orElseThrow().getValue() : 0)
                 + (screeningComponent != null ? priceComponentRepository
                 .findById(screeningComponent).orElseThrow().getValue() : 0);
+    }
+
+    private void checkValid(PriceComponentDto priceComponentDto) {
+        Objects.requireNonNull(priceComponentDto, "Price component cannot be null");
+        Objects.requireNonNull(priceComponentDto.getName(), "Price component name cannot be null");
+        Objects.requireNonNull(priceComponentDto.getValue(), "Price component value cannot be null");
     }
 
 }
