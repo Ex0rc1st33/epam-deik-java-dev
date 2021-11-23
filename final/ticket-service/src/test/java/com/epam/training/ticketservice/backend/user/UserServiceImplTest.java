@@ -1,4 +1,4 @@
-package com.epam.training.ticketservice.user;
+package com.epam.training.ticketservice.backend.user;
 
 import com.epam.training.ticketservice.backend.user.model.UserDto;
 import com.epam.training.ticketservice.backend.user.persistence.entity.User;

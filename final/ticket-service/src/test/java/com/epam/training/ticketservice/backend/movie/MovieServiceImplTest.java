@@ -1,4 +1,4 @@
-package com.epam.training.ticketservice.movie;
+package com.epam.training.ticketservice.backend.movie;
 
 import com.epam.training.ticketservice.backend.movie.model.MovieDto;
 import com.epam.training.ticketservice.backend.movie.persistence.entity.Movie;

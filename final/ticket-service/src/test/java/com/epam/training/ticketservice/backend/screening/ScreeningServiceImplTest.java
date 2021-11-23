@@ -1,8 +1,7 @@
-package com.epam.training.ticketservice.screening;
+package com.epam.training.ticketservice.backend.screening;
 
 import com.epam.training.ticketservice.backend.movie.persistence.entity.Movie;
 import com.epam.training.ticketservice.backend.movie.service.MovieService;
-import com.epam.training.ticketservice.backend.room.model.RoomDto;
 import com.epam.training.ticketservice.backend.room.persistence.entity.Room;
 import com.epam.training.ticketservice.backend.room.service.RoomService;
 import com.epam.training.ticketservice.backend.screening.model.ScreeningDto;

@@ -1,4 +1,4 @@
-package com.epam.training.ticketservice.room;
+package com.epam.training.ticketservice.backend.room;
 
 import com.epam.training.ticketservice.backend.room.model.RoomDto;
 import com.epam.training.ticketservice.backend.room.persistence.entity.Room;

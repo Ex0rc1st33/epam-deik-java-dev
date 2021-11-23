@@ -1,7 +1,6 @@
-package com.epam.training.ticketservice.pricecomponent;
+package com.epam.training.ticketservice.backend.pricecomponent;
 
 import com.epam.training.ticketservice.backend.booking.model.BookingDto;
-import com.epam.training.ticketservice.backend.booking.persistence.entity.Booking;
 import com.epam.training.ticketservice.backend.movie.persistence.entity.Movie;
 import com.epam.training.ticketservice.backend.movie.service.MovieService;
 import com.epam.training.ticketservice.backend.pricecomponent.model.PriceComponentDto;

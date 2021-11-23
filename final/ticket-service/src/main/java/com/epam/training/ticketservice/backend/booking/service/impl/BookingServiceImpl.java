@@ -4,6 +4,7 @@ import com.epam.training.ticketservice.backend.booking.model.BookingDto;
 import com.epam.training.ticketservice.backend.booking.persistence.entity.Booking;
 import com.epam.training.ticketservice.backend.booking.persistence.repository.BookingRepository;
 import com.epam.training.ticketservice.backend.booking.service.BookingService;
+import com.epam.training.ticketservice.backend.movie.model.MovieDto;
 import com.epam.training.ticketservice.backend.pricecomponent.service.PriceComponentService;
 import com.epam.training.ticketservice.backend.room.persistence.entity.Room;
 import com.epam.training.ticketservice.backend.room.service.RoomService;
@@ -37,19 +38,11 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public String createBooking(BookingDto bookingDto) {
-        Objects.requireNonNull(bookingDto, "Booking cannot be null");
-        Objects.requireNonNull(bookingDto.getMovieTitle(), "Booking movieTitle cannot be null");
-        Objects.requireNonNull(bookingDto.getRoomName(), "Booking roomName cannot be null");
-        Objects.requireNonNull(bookingDto.getStartedAt(), "Booking startedAt cannot be null");
-        Objects.requireNonNull(bookingDto.getSeats(), "Booking seats cannot be null");
-        Objects.requireNonNull(bookingDto.getUser(), "Booking user cannot be null");
-        Optional<Screening> screening = screeningService
-                .getMovieByTitleAndRoomNameAndStartedAt(bookingDto.getMovieTitle(),
+        checkValid(bookingDto);
+        screeningService.getMovieByTitleAndRoomNameAndStartedAt(bookingDto.getMovieTitle(),
                         bookingDto.getRoomName(),
-                        bookingDto.getStartedAt());
-        if (screening.isEmpty()) {
-            return "Screening does not exist";
-        }
+                        bookingDto.getStartedAt())
+                .orElseThrow(() -> new IllegalStateException("Screening does not exist"));
         String seat = getTakenSeat(bookingDto);
         if (seat != null) {
             return "Seat (" + seat + ") is already taken";
@@ -153,6 +146,15 @@ public class BookingServiceImpl implements BookingService {
             }
         }
         return null;
+    }
+
+    private void checkValid(BookingDto bookingDto) {
+        Objects.requireNonNull(bookingDto, "Booking cannot be null");
+        Objects.requireNonNull(bookingDto.getMovieTitle(), "Booking movieTitle cannot be null");
+        Objects.requireNonNull(bookingDto.getRoomName(), "Booking roomName cannot be null");
+        Objects.requireNonNull(bookingDto.getStartedAt(), "Booking startedAt cannot be null");
+        Objects.requireNonNull(bookingDto.getSeats(), "Booking seats cannot be null");
+        Objects.requireNonNull(bookingDto.getUser(), "Booking user cannot be null");
     }
 
 }
